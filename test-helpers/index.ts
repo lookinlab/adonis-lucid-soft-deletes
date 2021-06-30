@@ -41,6 +41,7 @@ export async function setup (destroyDb: boolean = true) {
       table.string('password')
       table.integer('company_id')
       table.timestamps()
+      table.timestamp('deleted_at', { useTz: true })
     })
   }
 
@@ -88,13 +89,6 @@ export async function cleanup () {
 
   await db.destroy()
   await fs.cleanup()
-}
-
-/**
- * Split string to an array using cross platform new lines
- */
-export function toNewlineArray (contents: string): string[] {
-  return contents.split(/\r?\n/)
 }
 
 /**
