@@ -32,6 +32,10 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
           client: QueryClientContract
         ): ModelQueryBuilderContract<T>
         /**
+         * Override default delete method with save hooks
+         */
+        delete(): Promise<void>
+        /**
          * Restore model
          */
         restore(): Promise<any>

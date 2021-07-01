@@ -11,6 +11,7 @@ import { DateTime } from 'luxon'
 import { NormalizeConstructor } from '@ioc:Adonis/Core/Helpers'
 import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
+import { Exception } from '@poppinss/utils'
 
 export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
   class ModelWithSoftDeletes extends superclass {
@@ -122,9 +123,20 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     }
 
     /**
+     * Override default delete method
+     */
+    public async delete (): Promise<void> {
+      await super.delete()
+      this.$isDeleted = this.$forceDelete
+    }
+
+    /**
      * Restore model
      */
     public async restore (): Promise<this> {
+      if (this.$isDeleted) {
+        throw new Exception('Cannot restore a model instance is was force deleted', 500, 'E_MODEL_FORCE_DELETED')
+      }
       if (!this.trashed) {
         return this
       }
@@ -139,8 +151,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
      */
     public async forceDelete (): Promise<void> {
       this.$forceDelete = true
-      await super.delete()
-      this.$forceDelete = false
+      await this.delete()
     }
   }
   return ModelWithSoftDeletes
