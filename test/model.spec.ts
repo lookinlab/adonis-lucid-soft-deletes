@@ -155,6 +155,10 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     const users = await User.withTrashed().exec()
     assert.lengthOf(users, 3)
 
+    const usersWithPagination = await User.onlyTrashed().paginate(1, 5)
+    assert.lengthOf(usersWithPagination.all(), 1)
+    assert.equal(usersWithPagination.total, 1)
+
     await User.truncate()
   })
 
