@@ -13,7 +13,6 @@ import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 
 export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
   class ModelWithSoftDeletes extends superclass {
-    public static table = superclass.table
     public static $ignoreDeleted = true
 
     public static boot (): void {
@@ -139,10 +138,5 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       return super.delete()
     }
   }
-
-  Object.defineProperty(ModelWithSoftDeletes, 'name', {
-    writable: true,
-    value: superclass.name,
-  })
   return ModelWithSoftDeletes
 }
