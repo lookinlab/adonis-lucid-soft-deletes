@@ -124,10 +124,12 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
      * Restore model
      */
     public async restore (): Promise<this> {
+      if (!this.trashed) {
+        return this
+      }
       this.deletedAt = null
       await this.save()
 
-      this.$isDeleted = false
       return this
     }
 
