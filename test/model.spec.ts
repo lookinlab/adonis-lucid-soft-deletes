@@ -16,12 +16,7 @@ import { compose } from '@poppinss/utils/build/src/Helpers'
 import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
 import { SoftDeletes } from '../src/SoftDeletes'
 
-/**
- * TODO:
- * - add the check `beforeFind`, `beforeFetch`, `afterFind`, `afterFetch` hooks
- * - add the check `restore` and `forceDelete` methods
- */
-test.group('BaseModelFilter', (group) => {
+test.group('BaseModelWithSoftDeletes', (group) => {
   let app: ApplicationContract
   let BaseModel: LucidModel
 
@@ -77,6 +72,19 @@ test.group('BaseModelFilter', (group) => {
     assert.equal(TestModel.$ignoreDeleted, true)
   })
 
+  test('correct name and table name of model', (assert) => {
+    class User extends compose(BaseModel, SoftDeletes) {}
+    User.boot()
+
+    class Industry extends compose(BaseModel, SoftDeletes) {}
+    Industry.boot()
+
+    assert.equal(User.table, 'users')
+    assert.equal(User.name, 'User')
+    assert.equal(Industry.table, 'industries')
+    assert.equal(Industry.name, 'Industry')
+  })
+
   test('querying models without trashed models', async (assert) => {
     class User extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
@@ -112,6 +120,44 @@ test.group('BaseModelFilter', (group) => {
     await User.truncate()
   })
 
+  test('querying all models with trashed models', async (assert) => {
+    class User extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public username: string
+
+      @column()
+      public email: string
+
+      @column()
+      public isAdmin: number
+
+      @column()
+      public companyId: number
+    }
+    User.boot()
+
+    const user1 = new User()
+    user1.fill({ username: 'Tony', email: 'tony@test.ru', isAdmin: 1, companyId: 1 })
+    await user1.save()
+    await user1.delete()
+
+    const user2 = new User()
+    user2.fill({ username: 'Adonis', email: 'test@test.ru', isAdmin: 0, companyId: 2 })
+    await user2.save()
+
+    const user3 = new User()
+    user3.fill({ username: 'Lucid', email: 'lucid@test.ru', isAdmin: 0, companyId: 1 })
+    await user3.save()
+
+    const users = await User.withTrashed().exec()
+    assert.lengthOf(users, 3)
+
+    await User.truncate()
+  })
+
   test('querying only trashed models', async (assert) => {
     class User extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
@@ -143,6 +189,80 @@ test.group('BaseModelFilter', (group) => {
     const users = await User.onlyTrashed().exec()
     assert.lengthOf(users, 1)
     assert.equal(users[0].id, user1.id)
+
+    await User.truncate()
+  })
+
+  test('`restore` model after soft delete', async (assert) => {
+    class User extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public username: string
+
+      @column()
+      public email: string
+
+      @column()
+      public isAdmin: number
+
+      @column()
+      public companyId: number
+    }
+    User.boot()
+
+    const user1 = new User()
+    user1.fill({ username: 'Tony', email: 'tony@test.ru', isAdmin: 1, companyId: 1 })
+    await user1.save()
+    await user1.delete()
+
+    const users = await User.onlyTrashed().exec()
+    assert.lengthOf(users, 1)
+    assert.equal(users[0].id, user1.id)
+
+    await user1.restore()
+
+    const user = await User.query().first()
+    assert.deepStrictEqual(user!.toJSON(), user1.toJSON())
+
+    await User.truncate()
+  })
+
+  test('`forceDelete` model and throw error when `restore`', async (assert) => {
+    assert.plan(2)
+
+    class User extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public username: string
+
+      @column()
+      public email: string
+
+      @column()
+      public isAdmin: number
+
+      @column()
+      public companyId: number
+    }
+    User.boot()
+
+    const user1 = new User()
+    user1.fill({ username: 'Tony', email: 'tony@test.ru', isAdmin: 1, companyId: 1 })
+    await user1.save()
+    await user1.forceDelete()
+
+    const users = await User.withTrashed().exec()
+    assert.lengthOf(users, 0)
+
+    try {
+      await user1.restore()
+    } catch ({ message }) {
+      assert.equal(message, 'E_MODEL_FORCE_DELETED: Cannot restore a model instance is was force deleted')
+    }
 
     await User.truncate()
   })
