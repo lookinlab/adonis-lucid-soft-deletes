@@ -3,8 +3,9 @@
 This addon adds the functionality to soft deletes Lucid Models
 > Works with `@adonisjs/lucid@^15.*.*`
 
-**WIP:**
+### WIP:
 -[ ] Soft Deletes of relations
+-[ ] Restore from ModelQueryBuilder
 
 ## Introduction
 
