@@ -12,16 +12,25 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
   import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
   import { DateTime } from 'luxon'
   import { ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
+  import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 
   export interface SoftDeletesMixin {
     <T extends NormalizeConstructor<LucidModel>>(superclass: T): {
       new (...args: any[]): {
+        $forceDelete: boolean
         deletedAt: DateTime | null
         readonly trashed: boolean
         /**
-         * Override default delete method
+         * Override default $getQueryFor for soft delete
          */
-        delete(): Promise<void>
+        $getQueryFor(
+          action: 'insert',
+          client: QueryClientContract
+        ): ReturnType<QueryClientContract['insertQuery']>
+        $getQueryFor(
+          action: 'update' | 'delete' | 'refresh',
+          client: QueryClientContract
+        ): ModelQueryBuilderContract<T>
         /**
          * Restore model
          */

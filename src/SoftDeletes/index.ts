@@ -10,6 +10,7 @@
 import { DateTime } from 'luxon'
 import { NormalizeConstructor } from '@ioc:Adonis/Core/Helpers'
 import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
+import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 
 export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
   class ModelWithSoftDeletes extends superclass {
@@ -80,6 +81,11 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     }
 
     /**
+     * Force delete instance property
+     */
+    public $forceDelete = false
+
+    /**
      * Soft deleted property
      */
     public deletedAt: DateTime | null
@@ -92,32 +98,27 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     }
 
     /**
-     * Override default delete method
+     * Override default $getQueryFor method
      */
-    public async delete (): Promise<void> {
-      const Model = this.constructor as typeof ModelWithSoftDeletes
-      const successMessage = 'Soft delete is successful'
-
+    public $getQueryFor (
+      action: 'insert' | 'update' | 'delete' | 'refresh',
+      client: QueryClientContract
+    ): any {
       /**
-       * Before delete handler
+       * Soft Delete
        */
-      const beforeDelete = async (model: ModelWithSoftDeletes) => {
-        model.deletedAt = DateTime.local()
-        await model.save()
-
-        throw successMessage
+      const softDelete = async (): Promise<void> => {
+        this.deletedAt = DateTime.local()
+        await this.save()
       }
 
-      try {
-        Model.$hooks.add('before', 'delete', beforeDelete)
-        await super.delete()
-      } catch (error) {
-        if (error !== successMessage) {
-          throw error
-        }
-      } finally {
-        Model.$hooks.remove('before', 'delete', beforeDelete)
+      if (action === 'delete' && !this.$forceDelete) {
+        return { del: softDelete, delete: softDelete }
       }
+      if (action === 'insert') {
+        return super.$getQueryFor(action, client)
+      }
+      return super.$getQueryFor(action, client)
     }
 
     /**
@@ -137,7 +138,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
      * Force delete model
      */
     public async forceDelete (): Promise<void> {
-      return super.delete()
+      this.$forceDelete = true
+      await super.delete()
+      this.$forceDelete = false
     }
   }
   return ModelWithSoftDeletes
