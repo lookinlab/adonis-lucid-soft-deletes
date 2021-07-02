@@ -8,8 +8,6 @@
  */
 
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { SoftDeletes } from '../src/SoftDeletes'
-import { Exception } from '@poppinss/utils'
 
 /**
  * Provider to register lucid soft deletes
@@ -20,12 +18,13 @@ export default class LucidSoftDeletesProvider {
 
   public register (): void {
     this.app.container.singleton('Adonis/Addons/LucidSoftDeletes', () => {
-      return { SoftDeletes }
+      return require('../src/SoftDeletes')
     })
   }
 
   public boot (): void {
     const { ModelQueryBuilder } = this.app.container.use('Adonis/Lucid/Database')
+    const { Exception } = require('@poppinss/utils')
 
     ModelQueryBuilder.macro('restore', async function () {
       if (!('$ignoreDeleted' in this.model)) {
