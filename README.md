@@ -107,6 +107,11 @@ export default class UsersController {
 }
 ```
 
+> :point_right: Soft delete only works for model instances. `await User.query().delete()` as before
+will delete models from database
+
+```
+
 :point_right: When querying a model that uses soft deletes, the soft deleted models
 will automatically be excluded from all query results.
 
