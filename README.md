@@ -5,7 +5,7 @@ This addon adds the functionality to soft deletes Lucid Models
 
 ### WIP:
 - [ ] Soft Deletes of relations
-- [ ] Restore from ModelQueryBuilder
+- [x] Restore from ModelQueryBuilder
 
 ## Introduction
 
@@ -134,6 +134,7 @@ export default class UsersController {
 ### Restoring Soft Deleted Models
 
 To restore a soft deleted model, you may call the `.restore()` method on a model instance.
+Also, method `.restore()` exists after methods `.withTrashed()` and `.onlyTrashed()`
 The `restore` method will set the model's `deleted_at` column to `null`:
 
 ```ts
@@ -150,6 +151,10 @@ export default class TrashUsersController {
     await user.restore()
     
     return user
+    
+    // or
+
+    await User.withTrashed().where('id', params.id).restore()
   }
 }
 ```

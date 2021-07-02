@@ -14,8 +14,12 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
   import { ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
   import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 
+  type ModelQueryBuilderWithRestore<M extends LucidModel, R> = ModelQueryBuilderContract<M, R> & {
+    restore(): Promise<void>
+  }
+
   export interface SoftDeletesMixin {
-    <T extends NormalizeConstructor<LucidModel>>(superclass: T): {
+    <T extends NormalizeConstructor<LucidModel>>(superclass: T): T & {
       new (...args: any[]): {
         $forceDelete: boolean
         deletedAt: DateTime | null
@@ -50,17 +54,16 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
       /**
        * Fetch all models without filter by deleted_at
        */
-      withTrashed<
-        Model extends LucidModel & T,
-        Result = InstanceType<Model>
-      >(this: Model): ModelQueryBuilderContract<Model, Result>;
+      withTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
+        this: Model
+      ): ModelQueryBuilderWithRestore<Model, Result>;
       /**
        * Fetch models only with deleted_at
        */
-      onlyTrashed<
-        Model extends LucidModel & T
-      >(this: Model): ModelQueryBuilderContract<Model, InstanceType<Model>>;
-    } & T
+      onlyTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
+        this: Model
+      ): ModelQueryBuilderWithRestore<Model, Result>;
+    }
   }
   export const SoftDeletes: SoftDeletesMixin
 }
