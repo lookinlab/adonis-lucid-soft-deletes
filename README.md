@@ -3,10 +3,6 @@
 This addon adds the functionality to soft deletes Lucid Models
 > Works with `@adonisjs/lucid@^15.*.*`
 
-### WIP:
-- [ ] Soft Deletes of relations
-- [x] Restore from ModelQueryBuilder
-
 ## Introduction
 
 Sometimes you may wish to "no-delete" a model from database.
@@ -107,7 +103,7 @@ export default class UsersController {
 }
 ```
 
-> :point_right: Soft delete only works for model instances. `await User.query().delete()` as before
+> :boom: Soft delete only works for model instances. `await User.query().delete()` as before
 will delete models from database
 
 :point_right: When querying a model that uses soft deletes, the soft deleted models
@@ -158,6 +154,7 @@ export default class TrashUsersController {
     // or
 
     await User.withTrashed().where('id', params.id).restore()
+    await User.query().withTrashed().where('id', params.id).restore()
   }
 }
 ```
@@ -206,6 +203,12 @@ export default class UsersController {
       : User.query()
 
     return usersQuery.exec()
+
+    // or
+
+    return User.query().if(request.input('withTrashed'), (query) => {
+      query.withTrashed()
+    }).exec()
   }
 }
 ```
@@ -227,4 +230,14 @@ export default class TrashUsersController {
     return User.onlyTrashed().exec()
   }
 }
+```
+
+### Soft Deletes methods
+
+Methods `.withTrashed()`, `.onlyTrashed()` and `.restore()` also available
+in QueryBuilder for models with soft delete, example:
+
+```ts
+await User.query().withTrashed().exec()
+await User.query().onlyTrashed().restore()
 ```
