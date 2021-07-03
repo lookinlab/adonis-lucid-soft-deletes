@@ -23,14 +23,9 @@ export default class LucidSoftDeletesProvider {
   }
 
   public boot (): void {
-    const { ModelQueryBuilder } = this.app.container.use('Adonis/Lucid/Database')
-    const { Exception } = require('@poppinss/utils')
-
-    ModelQueryBuilder.macro('restore', async function () {
-      if (!('$ignoreDeleted' in this.model)) {
-        throw new Exception(`${this.model.name} model don't support Soft Deletes`, 500, 'E_MODEL_SOFT_DELETE')
-      }
-      await this.update({ deleted_at: null })
+    this.app.container.withBindings(['Adonis/Lucid/Database'], ({ ModelQueryBuilder }) => {
+      const { extendModelQueryBuilder } = require('../src/Bindings/ModelQueryBuilder')
+      extendModelQueryBuilder(ModelQueryBuilder)
     })
   }
 }
