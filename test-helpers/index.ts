@@ -53,6 +53,7 @@ export async function setup (destroyDb: boolean = true) {
       table.string('text')
       table.integer('revenue')
       table.timestamps()
+      table.timestamp('deleted_at', { useTz: true })
     })
   }
 
