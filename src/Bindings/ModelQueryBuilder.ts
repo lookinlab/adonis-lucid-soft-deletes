@@ -1,6 +1,12 @@
-/**
- * Define SoftDeletes binding to ModelQueryBuilder
+/*
+ * adonis-lucid-soft-deletes
+ *
+ * (c) Lookin Anton <lookin@lookinlab.ru>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
 import { DatabaseContract } from '@ioc:Adonis/Lucid/Database'
 import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
 import { Exception } from '@poppinss/utils'
