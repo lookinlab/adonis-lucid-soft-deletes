@@ -1,5 +1,7 @@
 # Adonis Lucid Soft Deletes
 
+[![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
+
 This addon adds the functionality to soft deletes Lucid Models
 > Works with `@adonisjs/lucid@^15.*.*`
 
@@ -241,3 +243,12 @@ in QueryBuilder for models with soft delete, example:
 await User.query().withTrashed().exec()
 await User.query().onlyTrashed().restore()
 ```
+
+[npm-image]: https://img.shields.io/npm/v/adonis-lucid-soft-deletes?logo=npm&style=for-the-badge
+[npm-url]: https://www.npmjs.com/package/adonis-lucid-soft-deletes
+
+[license-image]: https://img.shields.io/npm/l/adonis-lucid-soft-deletes?style=for-the-badge&color=blueviolet
+[license-url]: https://github.com/lookinlab/adonis-lucid-soft-deletes/blob/develop/LICENSE.md
+
+[typescript-image]: https://img.shields.io/npm/types/adonis-lucid-soft-deletes?color=294E80&label=%20&logo=typescript&style=for-the-badge
+[typescript-url]: https://github.com/lookinlab
