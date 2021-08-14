@@ -13,7 +13,9 @@ import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 import { Exception } from '@poppinss/utils'
 
-export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
+export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (
+  superclass: T
+) {
   class ModelWithSoftDeletes extends superclass {
     public static $ignoreDeleted = true
 
@@ -31,7 +33,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       /**
        * Ignore deleted handle
        */
-      const ignoreDeleted = (query: ModelQueryBuilderContract<T, InstanceType<T>>): void => {
+      const ignoreDeleted = (
+        query: ModelQueryBuilderContract<T, InstanceType<T>>
+      ): void => {
         if (!this.$ignoreDeleted) {
           return
         }
@@ -39,6 +43,18 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       }
       this.before('find', ignoreDeleted)
       this.before('fetch', ignoreDeleted)
+      this.before(
+        'paginate',
+        (
+          data: [
+            ModelQueryBuilderContract<T>,
+            ModelQueryBuilderContract<T>
+          ]
+        ) => {
+          const countQuery = data[0]
+          countQuery.whereNull('deleted_at')
+        }
+      )
 
       /**
        * Force enable ignore after every find/fetch
@@ -74,9 +90,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Fetch models only with deleted_at
      */
-    public static onlyTrashed<
-      Model extends typeof ModelWithSoftDeletes
-    >(this: Model): ModelQueryBuilderContract<Model, InstanceType<Model>> {
+    public static onlyTrashed<Model extends typeof ModelWithSoftDeletes>(
+      this: Model
+    ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
       this.disableIgnore()
       return this.query().whereNotNull('deleted_at')
     }
@@ -135,7 +151,11 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
      */
     public async restore (): Promise<this> {
       if (this.$isDeleted) {
-        throw new Exception('Cannot restore a model instance is was force deleted', 500, 'E_MODEL_FORCE_DELETED')
+        throw new Exception(
+          'Cannot restore a model instance is was force deleted',
+          500,
+          'E_MODEL_FORCE_DELETED'
+        )
       }
       if (!this.trashed) {
         return this
