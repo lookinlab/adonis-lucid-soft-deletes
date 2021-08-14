@@ -14,16 +14,20 @@ import { Exception } from '@poppinss/utils'
 /**
  * Raises exception when model not with soft delete
  */
-function ensureModelWithSoftDeletes (model: LucidModel) {
+function ensureModelWithSoftDeletes(model: LucidModel) {
   if (!('$ignoreDeleted' in model)) {
-    throw new Exception(`${model.name} model don't support Soft Deletes`, 500, 'E_MODEL_SOFT_DELETE')
+    throw new Exception(
+      `${model.name} model don't support Soft Deletes`,
+      500,
+      'E_MODEL_SOFT_DELETE'
+    )
   }
 }
 
 /**
  * Define SoftDeletes binding to ModelQueryBuilder
  */
-export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBuilder']) {
+export function extendModelQueryBuilder(builder: DatabaseContract['ModelQueryBuilder']) {
   builder.macro('restore', async function () {
     ensureModelWithSoftDeletes(this.model)
     await this.update({ deleted_at: null })

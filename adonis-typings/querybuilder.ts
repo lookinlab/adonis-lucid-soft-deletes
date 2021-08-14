@@ -14,9 +14,7 @@ declare module '@ioc:Adonis/Lucid/Orm' {
   }
 
   type ExcludeTypeMethods<Type, Model> = {
-    [Method in keyof Type as (
-      Model extends ModelWithSoftDeletes ? Method : never
-    )]: Type[Method]
+    [Method in keyof Type as Model extends ModelWithSoftDeletes ? Method : never]: Type[Method]
   }
 
   interface SoftDeletesMethods<Model extends LucidModel, Result = InstanceType<Model>> {

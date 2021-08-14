@@ -105,7 +105,13 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     User.boot()
 
     const user1 = new User()
-    user1.fill({ username: 'Tony', email: 'tony@test.ru', isAdmin: 1, companyId: 1, deletedAt: null })
+    user1.fill({
+      username: 'Tony',
+      email: 'tony@test.ru',
+      isAdmin: 1,
+      companyId: 1,
+      deletedAt: null,
+    })
     await user1.save()
 
     const user2 = new User()
@@ -265,7 +271,10 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     try {
       await user1.restore()
     } catch ({ message }) {
-      assert.equal(message, 'E_MODEL_FORCE_DELETED: Cannot restore a model instance is was force deleted')
+      assert.equal(
+        message,
+        'E_MODEL_FORCE_DELETED: Cannot restore a model instance is was force deleted'
+      )
     }
 
     await User.truncate()

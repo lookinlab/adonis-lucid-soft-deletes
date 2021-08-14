@@ -27,7 +27,7 @@ export const dbConfig: SqliteConfig = {
   useNullAsDefault: true,
 }
 
-export async function setup (destroyDb: boolean = true) {
+export async function setup(destroyDb: boolean = true) {
   await fs.ensureRoot()
   const db = knex(dbConfig)
 
@@ -80,7 +80,7 @@ export async function setup (destroyDb: boolean = true) {
   }
 }
 
-export async function cleanup () {
+export async function cleanup() {
   const db = knex(dbConfig)
 
   await db.schema.dropTableIfExists('users')
@@ -95,7 +95,7 @@ export async function cleanup () {
 /**
  * Setup application
  */
-export async function setupApplication (): Promise<ApplicationContract> {
+export async function setupApplication(): Promise<ApplicationContract> {
   await fs.add('.env', '')
   await fs.add(
     'config/app.ts',
@@ -131,17 +131,19 @@ export async function setupApplication (): Promise<ApplicationContract> {
 /**
  * Get BaseModel of application
  */
-export function getBaseModel (app: ApplicationContract) {
+export function getBaseModel(app: ApplicationContract) {
   BaseModel.$container = app.container
-  BaseModel.$adapter = new Adapter(new Database(
-    {
-      connection: 'sqlite',
-      connections: { sqlite: dbConfig as SqliteConfig },
-    },
-    app.container.use('Adonis/Core/Logger'),
-    app.container.use('Adonis/Core/Profiler'),
-    app.container.use('Adonis/Core/Event')
-  ))
+  BaseModel.$adapter = new Adapter(
+    new Database(
+      {
+        connection: 'sqlite',
+        connections: { sqlite: dbConfig as SqliteConfig },
+      },
+      app.container.use('Adonis/Core/Logger'),
+      app.container.use('Adonis/Core/Profiler'),
+      app.container.use('Adonis/Core/Event')
+    )
+  )
 
-  return (BaseModel as unknown) as LucidModel
+  return BaseModel as unknown as LucidModel
 }

@@ -30,7 +30,7 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
        */
       onlyTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
         this: Model
-      ): ModelQueryBuilderContract<Model, Result>;
+      ): ModelQueryBuilderContract<Model, Result>
 
       new (...args: any[]): {
         $forceDelete: boolean
@@ -64,4 +64,3 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
   }
   export const SoftDeletes: SoftDeletesMixin
 }
-

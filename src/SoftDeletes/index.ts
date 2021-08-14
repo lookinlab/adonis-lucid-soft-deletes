@@ -13,11 +13,11 @@ import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 import { Exception } from '@poppinss/utils'
 
-export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
+export function SoftDeletes<T extends NormalizeConstructor<LucidModel>>(superclass: T) {
   class ModelWithSoftDeletes extends superclass {
     public static $ignoreDeleted = true
 
-    public static boot (): void {
+    public static boot(): void {
       if (this.booted === true) {
         return
       }
@@ -53,7 +53,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       this.after('fetch', enableIgnore)
     }
 
-    public static disableIgnore (): void {
+    public static disableIgnore(): void {
       if (!this.$ignoreDeleted) {
         return
       }
@@ -74,9 +74,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Fetch models only with deleted_at
      */
-    public static onlyTrashed<
-      Model extends typeof ModelWithSoftDeletes
-    >(this: Model): ModelQueryBuilderContract<Model, InstanceType<Model>> {
+    public static onlyTrashed<Model extends typeof ModelWithSoftDeletes>(
+      this: Model
+    ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
       this.disableIgnore()
       return this.query().whereNotNull('deleted_at')
     }
@@ -94,14 +94,14 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Computed trashed property
      */
-    public get trashed (): boolean {
+    public get trashed(): boolean {
       return this.deletedAt !== null
     }
 
     /**
      * Override default $getQueryFor method
      */
-    public $getQueryFor (
+    public $getQueryFor(
       action: 'insert' | 'update' | 'delete' | 'refresh',
       client: QueryClientContract
     ): any {
@@ -125,7 +125,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Override default delete method
      */
-    public async delete (): Promise<void> {
+    public async delete(): Promise<void> {
       await super.delete()
       this.$isDeleted = this.$forceDelete
     }
@@ -133,9 +133,13 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Restore model
      */
-    public async restore (): Promise<this> {
+    public async restore(): Promise<this> {
       if (this.$isDeleted) {
-        throw new Exception('Cannot restore a model instance is was force deleted', 500, 'E_MODEL_FORCE_DELETED')
+        throw new Exception(
+          'Cannot restore a model instance is was force deleted',
+          500,
+          'E_MODEL_FORCE_DELETED'
+        )
       }
       if (!this.trashed) {
         return this
@@ -149,7 +153,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Force delete model
      */
-    public async forceDelete (): Promise<void> {
+    public async forceDelete(): Promise<void> {
       this.$forceDelete = true
       await this.delete()
     }
