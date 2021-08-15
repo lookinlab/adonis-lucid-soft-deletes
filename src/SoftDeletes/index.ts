@@ -39,6 +39,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       }
       this.before('find', ignoreDeleted)
       this.before('fetch', ignoreDeleted)
+      this.before('paginate', ([countQuery]) => ignoreDeleted(countQuery))
 
       /**
        * Force enable ignore after every find/fetch
@@ -74,9 +75,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Fetch models only with deleted_at
      */
-    public static onlyTrashed<
-      Model extends typeof ModelWithSoftDeletes
-    >(this: Model): ModelQueryBuilderContract<Model, InstanceType<Model>> {
+    public static onlyTrashed<Model extends typeof ModelWithSoftDeletes>(
+      this: Model
+    ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
       this.disableIgnore()
       return this.query().whereNotNull('deleted_at')
     }

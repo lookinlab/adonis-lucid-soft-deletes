@@ -117,6 +117,9 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     assert.lengthOf(users, 1)
     assert.deepStrictEqual(users[0].toJSON(), user1.toJSON())
 
+    const usersWithPaginate = await User.query().paginate(1, 10)
+    assert.equal(usersWithPaginate.total, 1)
+
     await User.truncate()
   })
 
