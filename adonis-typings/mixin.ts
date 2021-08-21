@@ -16,19 +16,28 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
 
   export interface SoftDeletesMixin {
     <T extends NormalizeConstructor<LucidModel>>(superclass: T): T & {
-      boot(): void
-      $ignoreDeleted: boolean
-      disableIgnore(): void
+      ignoreDeleted(): void,
+      ignoreDeletedPaginate(): void
+
+      /**
+       * Disabled ignore deleted of query
+       */
+      disableIgnore<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
+        this: Model,
+        query: ModelQueryBuilderContract<Model, Result>
+      ): ModelQueryBuilderContract<Model, Result>
+
       /**
        * Fetch all models without filter by deleted_at
        */
-      withTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
+      withTrashed<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
         this: Model
       ): ModelQueryBuilderContract<Model, Result>
+
       /**
        * Fetch models only with deleted_at
        */
-      onlyTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
+      onlyTrashed<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
         this: Model
       ): ModelQueryBuilderContract<Model, Result>;
 

@@ -12,64 +12,47 @@ import { NormalizeConstructor } from '@ioc:Adonis/Core/Helpers'
 import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 import { QueryClientContract } from '@ioc:Adonis/Lucid/Database'
 import { Exception } from '@poppinss/utils'
+import {
+  column,
+  beforeFind,
+  beforeFetch,
+  beforePaginate,
+} from '@adonisjs/lucid/build/src/Orm/Decorators'
 
 export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (superclass: T) {
   class ModelWithSoftDeletes extends superclass {
-    public static $ignoreDeleted = true
-
-    public static boot (): void {
-      if (this.booted === true) {
+    @beforeFind()
+    @beforeFetch()
+    public static ignoreDeleted (query: ModelQueryBuilderContract<T, InstanceType<T>>): void {
+      if (query['ignoreDeleted'] === false) {
         return
       }
-      super.boot()
-
-      /**
-       * Add column deleted_at
-       */
-      this.$addColumn('deletedAt', {})
-
-      /**
-       * Ignore deleted handle
-       */
-      const ignoreDeleted = (query: ModelQueryBuilderContract<T, InstanceType<T>>): void => {
-        if (!this.$ignoreDeleted) {
-          return
-        }
-        query.whereNull('deleted_at')
-      }
-      this.before('find', ignoreDeleted)
-      this.before('fetch', ignoreDeleted)
-      this.before('paginate', ([countQuery]) => ignoreDeleted(countQuery))
-
-      /**
-       * Force enable ignore after every find/fetch
-       */
-      const enableIgnore = (): void => {
-        if (this.$ignoreDeleted) {
-          return
-        }
-        this.$ignoreDeleted = true
-      }
-      this.after('find', enableIgnore)
-      this.after('fetch', enableIgnore)
+      query.whereNull('deleted_at')
     }
 
-    public static disableIgnore (): void {
-      if (!this.$ignoreDeleted) {
-        return
+    @beforePaginate()
+    public static ignoreDeletedPaginate ([countQuery, query]): void {
+      countQuery['ignoreDeleted'] = query['ignoreDeleted']
+      this.ignoreDeleted(countQuery)
+    }
+
+    public static disableIgnore<Model extends typeof ModelWithSoftDeletes>(
+      query: ModelQueryBuilderContract<Model>
+    ): ModelQueryBuilderContract<Model> {
+      if (query['ignoreDeleted'] === false) {
+        return query
       }
-      this.$ignoreDeleted = false
+      query['ignoreDeleted'] = false
+      return query
     }
 
     /**
      * Fetch all models without filter by deleted_at
      */
-    public static withTrashed<
-      Model extends typeof ModelWithSoftDeletes,
-      Result = InstanceType<Model>
-    >(this: Model): ModelQueryBuilderContract<Model, Result> {
-      this.disableIgnore()
-      return this.query()
+    public static withTrashed<Model extends typeof ModelWithSoftDeletes>(
+      this: Model
+    ): ModelQueryBuilderContract<T, InstanceType<T>> {
+      return this.disableIgnore(this.query())
     }
 
     /**
@@ -78,8 +61,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     public static onlyTrashed<Model extends typeof ModelWithSoftDeletes>(
       this: Model
     ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
-      this.disableIgnore()
-      return this.query().whereNotNull('deleted_at')
+      return this.disableIgnore(this.query()).whereNotNull('deleted_at')
     }
 
     /**
@@ -90,6 +72,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     /**
      * Soft deleted property
      */
+    @column.dateTime()
     public deletedAt: DateTime | null
 
     /**

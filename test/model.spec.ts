@@ -64,14 +64,6 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     assert.equal(TestModel.$hasColumn('deletedAt'), true)
   })
 
-  test('exists `$ignoreDeleted` property and is true by default', (assert) => {
-    class TestModel extends compose(BaseModel, SoftDeletes) {}
-    TestModel.boot()
-
-    assert.property(TestModel, '$ignoreDeleted')
-    assert.equal(TestModel.$ignoreDeleted, true)
-  })
-
   test('correct name and table name of model', (assert) => {
     class User extends compose(BaseModel, SoftDeletes) {}
     User.boot()
@@ -118,6 +110,7 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     assert.deepStrictEqual(users[0].toJSON(), user1.toJSON())
 
     const usersWithPaginate = await User.query().paginate(1, 10)
+    assert.lengthOf(usersWithPaginate.all(), 1)
     assert.equal(usersWithPaginate.total, 1)
 
     await User.truncate()

@@ -9,8 +9,8 @@
 
 declare module '@ioc:Adonis/Lucid/Orm' {
   type ModelWithSoftDeletes = LucidModel & {
-    $ignoreDeleted: boolean
-    disableIgnore(): void
+    ignoreDeleted(): void
+    ignoreDeletedPaginate(): void
   }
 
   type ExcludeTypeMethods<Type, Model> = {

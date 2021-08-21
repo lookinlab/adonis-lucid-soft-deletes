@@ -31,13 +31,11 @@ export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBu
 
   builder.macro('withTrashed', function () {
     ensureModelWithSoftDeletes(this.model)
-    this.model.disableIgnore()
-    return this
+    return this.model.disableIgnore(this)
   })
 
   builder.macro('onlyTrashed', function () {
     ensureModelWithSoftDeletes(this.model)
-    this.model.disableIgnore()
-    return this.whereNotNull('deleted_at')
+    return this.model.disableIgnore(this).whereNotNull('deleted_at')
   })
 }
