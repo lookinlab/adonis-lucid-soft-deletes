@@ -15,7 +15,7 @@ import { Exception } from '@poppinss/utils'
  * Raises exception when model not with soft delete
  */
 function ensureModelWithSoftDeletes (model: LucidModel) {
-  if (!('$ignoreDeleted' in model)) {
+  if (!('ignoreDeleted' in model && 'ignoreDeletedPaginate' in model)) {
     throw new Exception(`${model.name} model don't support Soft Deletes`, 500, 'E_MODEL_SOFT_DELETE')
   }
 }
