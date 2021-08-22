@@ -57,6 +57,26 @@ export async function setup (destroyDb: boolean = true) {
     })
   }
 
+  const hasBooks = await db.schema.hasTable('books')
+  if (!hasBooks) {
+    await db.schema.createTable('books', (table) => {
+      table.increments().primary()
+      table.string('name').unique()
+      table.timestamps()
+      table.timestamp('deleted_at', { useTz: true })
+    })
+  }
+
+  const hasTicket = await db.schema.hasTable('authors')
+  if (!hasTicket) {
+    await db.schema.createTable('authors', (table) => {
+      table.increments().primary()
+      table.string('name')
+      table.timestamps()
+      table.timestamp('deleted_at', { useTz: true })
+    })
+  }
+
   const hasRoles = await db.schema.hasTable('roles')
   if (!hasRoles) {
     await db.schema.createTable('roles', (table) => {
@@ -75,6 +95,18 @@ export async function setup (destroyDb: boolean = true) {
     })
   }
 
+  const hasBooksAuhors = await db.schema.hasTable('author_book')
+  if (!hasBooksAuhors) {
+    await db.schema.createTable('author_book', (table) => {
+      table.increments().primary()
+      table.integer('book_id')
+      table.integer('author_id')
+      table.foreign('book_id').references('books.id')
+      table.foreign('author_id').references('authors.id')
+      table.timestamp('deleted_at', { useTz: true })
+    })
+  }
+
   if (destroyDb) {
     await db.destroy()
   }
@@ -85,8 +117,11 @@ export async function cleanup () {
 
   await db.schema.dropTableIfExists('users')
   await db.schema.dropTableIfExists('industries')
+  await db.schema.dropTableIfExists('books')
+  await db.schema.dropTableIfExists('authors')
   await db.schema.dropTableIfExists('roles')
   await db.schema.dropTableIfExists('industry_user')
+  await db.schema.dropTableIfExists('author_book')
 
   await db.destroy()
   await fs.cleanup()

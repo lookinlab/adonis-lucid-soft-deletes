@@ -35,7 +35,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
         if (!this.$ignoreDeleted) {
           return
         }
-        query.whereNull('deleted_at')
+        query.whereNull(`${query.model.table}.deleted_at`)
       }
       this.before('find', ignoreDeleted)
       this.before('fetch', ignoreDeleted)
