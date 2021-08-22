@@ -22,7 +22,7 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
       /**
        * Disabled ignore deleted of query
        */
-      disableIgnore<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
+      disableIgnore<Model extends LucidModel & T, Result = InstanceType<Model>>(
         this: Model,
         query: ModelQueryBuilderContract<Model, Result>
       ): ModelQueryBuilderContract<Model, Result>
@@ -30,14 +30,14 @@ declare module '@ioc:Adonis/Addons/LucidSoftDeletes' {
       /**
        * Fetch all models without filter by deleted_at
        */
-      withTrashed<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
+      withTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
         this: Model
       ): ModelQueryBuilderContract<Model, Result>
 
       /**
        * Fetch models only with deleted_at
        */
-      onlyTrashed<Model extends SoftDeletesMixin & T, Result = InstanceType<Model>>(
+      onlyTrashed<Model extends LucidModel & T, Result = InstanceType<Model>>(
         this: Model
       ): ModelQueryBuilderContract<Model, Result>;
 
