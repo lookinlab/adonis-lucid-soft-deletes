@@ -61,7 +61,8 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
     public static onlyTrashed<Model extends typeof ModelWithSoftDeletes>(
       this: Model
     ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
-      return this.disableIgnore(this.query()).whereNotNull('deleted_at')
+      const query = this.query()
+      return this.disableIgnore(query).whereNotNull(`${query.model.table}.deleted_at`)
     }
 
     /**
