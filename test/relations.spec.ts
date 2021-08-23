@@ -14,6 +14,7 @@ import { column, manyToMany } from '@adonisjs/lucid/build/src/Orm/Decorators'
 import { compose } from '@poppinss/utils/build/src/Helpers'
 import { LucidModel, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
 import { SoftDeletes } from '../src/SoftDeletes'
+import { DateTime } from 'luxon'
 
 test.group('Relations', (group) => {
   let app: ApplicationContract
@@ -95,5 +96,67 @@ test.group('Relations', (group) => {
     assert.lengthOf(industries, 1)
 
     await Promise.all([User.truncate(), Industry.truncate()])
+  })
+
+  test('querying many to many with preload', async (assert) => {
+    class MyBaseModel extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column.dateTime({ serializeAs: null })
+      public deletedAt: DateTime
+    }
+
+    class Book extends MyBaseModel {
+      public static table = 'books'
+
+      @column()
+      public name: string
+
+      @manyToMany(() => Author)
+      public authors: ManyToMany<typeof Author>
+    }
+
+    class Author extends MyBaseModel {
+      public static table = 'authors'
+
+      @column()
+      public name: string
+
+      @manyToMany(() => Book)
+      public books: ManyToMany<typeof Book>
+    }
+
+    const book1 = new Book()
+    book1.fill({ name: 'Introduction AdonisJs' })
+    await book1.save()
+
+    const book2 = new Book()
+    book2.fill({ name: 'Introduction Javascript' })
+    await book2.save()
+
+    const author1 = new Author()
+    author1.fill({ name: 'John' })
+    await author1.save()
+
+    const author2 = new Author()
+    author2.fill({ name: 'Mary' })
+    await author2.save()
+
+    const author3 = new Author()
+    author3.fill({ name: 'Paul' })
+    await author3.save()
+
+    await book1.related('authors').attach([author1.id, author2.id, author3.id])
+
+    await book2.delete()
+    await author1.delete()
+    await author2.delete()
+
+    const books = await Book.query()
+      .select('id', 'name').preload('authors')
+
+    assert.lengthOf(books, 1)
+    assert.lengthOf(books[0].authors, 1)
   })
 })
