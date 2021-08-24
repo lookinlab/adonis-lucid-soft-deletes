@@ -36,6 +36,6 @@ export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBu
 
   builder.macro('onlyTrashed', function () {
     ensureModelWithSoftDeletes(this.model)
-    return this.model.disableIgnore(this).whereNotNull('deleted_at')
+    return this.model.disableIgnore(this).whereNotNull(`${this.model.table}.deleted_at`)
   })
 }
