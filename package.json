@@ -1,6 +1,6 @@
 {
   "name": "adonis-lucid-soft-deletes",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Addon for soft deletes AdonisJS Lucid ORM",
   "main": "./build/providers/LucidSoftDeletesProvider.js",
   "files": [
