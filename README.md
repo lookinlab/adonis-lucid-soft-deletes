@@ -66,7 +66,7 @@ export default class Users extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       // ...
-      table.timestamp('deleted_at', { useTz: true })
+      table.timestamp('deleted_at', { useTz: true }).nullable()
     })
   }
   // ...
