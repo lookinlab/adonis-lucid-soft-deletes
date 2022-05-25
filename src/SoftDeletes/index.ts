@@ -23,11 +23,14 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
   class ModelWithSoftDeletes extends superclass {
     @beforeFind()
     @beforeFetch()
-    public static ignoreDeleted (query: ModelQueryBuilderContract<T, InstanceType<T>>): void {
+    public static ignoreDeleted<Model extends typeof ModelWithSoftDeletes>(
+      query: ModelQueryBuilderContract<Model>
+    ): void {
       if (query['ignoreDeleted'] === false) {
         return
       }
-      query.whereNull(`${query.model.table}.deleted_at`)
+      const deletedAtColumn = query.model.$getColumn('deletedAt')?.columnName
+      query.whereNull(`${query.model.table}.${deletedAtColumn}`)
     }
 
     @beforePaginate()
@@ -62,7 +65,9 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
       this: Model
     ): ModelQueryBuilderContract<Model, InstanceType<Model>> {
       const query = this.query()
-      return this.disableIgnore(query).whereNotNull(`${query.model.table}.deleted_at`)
+
+      const deletedAtColumn = query.model.$getColumn('deletedAt')?.columnName
+      return this.disableIgnore(query).whereNotNull(`${query.model.table}.${deletedAtColumn}`)
     }
 
     /**
@@ -74,7 +79,7 @@ export function SoftDeletes<T extends NormalizeConstructor<LucidModel>> (supercl
      * Soft deleted property
      */
     @column.dateTime()
-    public deletedAt: DateTime | null
+    public deletedAt?: DateTime | null
 
     /**
      * Computed trashed property

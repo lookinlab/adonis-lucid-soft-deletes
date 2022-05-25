@@ -15,6 +15,7 @@ import { column } from '@adonisjs/lucid/build/src/Orm/Decorators'
 import { compose } from '@poppinss/utils/build/src/Helpers'
 import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
 import { SoftDeletes } from '../src/SoftDeletes'
+import { DateTime } from 'luxon'
 
 test.group('BaseModelWithSoftDeletes', (group) => {
   let app: ApplicationContract
@@ -62,6 +63,17 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     TestModel.boot()
 
     assert.equal(TestModel.$hasColumn('deletedAt'), true)
+  })
+
+  test('custom column name for deletedAt of model', (assert) => {
+    class TestModel extends compose(BaseModel, SoftDeletes) {
+      @column.dateTime({ columnName: 'deletedAt' })
+      public deletedAt?: DateTime | null
+    }
+    TestModel.boot()
+
+    assert.equal(TestModel.$hasColumn('deletedAt'), true)
+    assert.equal(TestModel.$getColumn('deletedAt')?.columnName, 'deletedAt')
   })
 
   test('correct name and table name of model', (assert) => {
@@ -265,5 +277,97 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     }
 
     await User.truncate()
+  })
+
+  test('querying models with custom deletedAt column', async (assert) => {
+    class Post extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public title: string
+
+      @column.dateTime({ columnName: 'deletedAt' })
+      public deletedAt?: DateTime | null
+    }
+    Post.boot()
+
+    const post1 = new Post()
+    post1.fill({ title: 'New post 1', deletedAt: null })
+    await post1.save()
+
+    const post2 = new Post()
+    post2.fill({ title: 'Adonis the best' })
+    await post2.save()
+    await post2.delete()
+
+    const posts = await Post.all()
+    assert.lengthOf(posts, 1)
+    assert.deepStrictEqual(posts[0].toJSON(), post1.toJSON())
+
+    const postsWithPaginate = await Post.query().paginate(1, 10)
+    assert.lengthOf(postsWithPaginate.all(), 1)
+    assert.equal(postsWithPaginate.total, 1)
+
+    await Post.truncate()
+  })
+
+  test('querying only trashed models with custom deletedAt column', async (assert) => {
+    class Post extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public title: string
+
+      @column.dateTime({ columnName: 'deletedAt' })
+      public deletedAt?: DateTime | null
+    }
+    Post.boot()
+
+    const post1 = new Post()
+    post1.fill({ title: 'New post 1', deletedAt: null })
+    await post1.save()
+    await post1.delete()
+
+    const post2 = new Post()
+    post2.fill({ title: 'Adonis the best' })
+    await post2.save()
+
+    const posts = await Post.onlyTrashed().exec()
+    assert.lengthOf(posts, 1)
+    assert.equal(posts[0].id, post1.id)
+
+    await Post.truncate()
+  })
+
+  test('`restore` model after soft delete with custom deletedAt column', async (assert) => {
+    class Post extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public title: string
+
+      @column.dateTime({ columnName: 'deletedAt' })
+      public deletedAt?: DateTime | null
+    }
+    Post.boot()
+
+    const post1 = new Post()
+    post1.fill({ title: 'New post 1', deletedAt: null })
+    await post1.save()
+    await post1.delete()
+
+    const posts = await Post.onlyTrashed().exec()
+    assert.lengthOf(posts, 1)
+    assert.equal(posts[0].id, post1.id)
+
+    await post1.restore()
+
+    const user = await Post.query().first()
+    assert.deepStrictEqual(user!.toJSON(), post1.toJSON())
+
+    await Post.truncate()
   })
 })

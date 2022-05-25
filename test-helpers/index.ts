@@ -107,6 +107,15 @@ export async function setup (destroyDb: boolean = true) {
     })
   }
 
+  const hasPosts = await db.schema.hasTable('posts')
+  if (!hasPosts) {
+    await db.schema.createTable('posts', (table) => {
+      table.increments().primary()
+      table.string('title')
+      table.timestamp('deletedAt', { useTz: true })
+    })
+  }
+
   if (destroyDb) {
     await db.destroy()
   }
@@ -122,6 +131,7 @@ export async function cleanup () {
   await db.schema.dropTableIfExists('roles')
   await db.schema.dropTableIfExists('industry_user')
   await db.schema.dropTableIfExists('author_book')
+  await db.schema.dropTableIfExists('posts')
 
   await db.destroy()
   await fs.cleanup()

@@ -26,7 +26,9 @@ function ensureModelWithSoftDeletes (model: LucidModel) {
 export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBuilder']) {
   builder.macro('restore', async function () {
     ensureModelWithSoftDeletes(this.model)
-    await this.update({ deleted_at: null })
+
+    const deletedAtColumn = this.model.query.$getColumn('deletedAt')?.columnName
+    await this.update({ [deletedAtColumn]: null })
   })
 
   builder.macro('withTrashed', function () {
@@ -36,6 +38,8 @@ export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBu
 
   builder.macro('onlyTrashed', function () {
     ensureModelWithSoftDeletes(this.model)
-    return this.model.disableIgnore(this).whereNotNull(`${this.model.table}.deleted_at`)
+
+    const deletedAtColumn = this.model.query.$getColumn('deletedAt')?.columnName
+    return this.model.disableIgnore(this).whereNotNull(`${this.model.table}.${deletedAtColumn}`)
   })
 }
