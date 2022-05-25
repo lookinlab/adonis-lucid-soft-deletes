@@ -81,10 +81,14 @@ import { SoftDeletes } from '@ioc:Adonis/Addons/LucidSoftDeletes'
 
 export default class User extends compose(BaseModel, SoftDeletes) {
   // ...columns and props
+
+  // set custom `deletedAt` column name
+  @column.dateTime({ columnName: 'customDeletedAtColumn' })
+  public deletedAt?: DateTime | null
 }
 ```
 
-Now, when you call the `.delete()` method on the model, the `deleted_at` column
+Now, when you call the `.delete()` method on the model, the `deleted_at` (`customDeletedAtColumn`) column
 will be set to the current date and time. However, the model's database record will be left in the table.
 
 ```ts
