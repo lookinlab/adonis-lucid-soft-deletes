@@ -154,9 +154,82 @@ test.group('Relations', (group) => {
     await author2.delete()
 
     const books = await Book.query()
-      .select('id', 'name').preload('authors')
+      .select('id', 'name')
+      .preload('authors')
+      .exec()
 
     assert.lengthOf(books, 1)
     assert.lengthOf(books[0].authors, 1)
+
+    await Promise.all([Book.truncate(), Author.truncate()])
+  })
+
+  test('querying many to many with preload and group limit', async (assert) => {
+    class Book extends BaseModel {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public name: string
+
+      @manyToMany(() => Author)
+      public authors: ManyToMany<typeof Author>
+    }
+
+    class Author extends compose(BaseModel, SoftDeletes) {
+      @column({ isPrimary: true })
+      public id: number
+
+      @column()
+      public name: string
+
+      @column.dateTime()
+      public deletedAt: DateTime
+
+      @manyToMany(() => Book)
+      public books: ManyToMany<typeof Book>
+    }
+
+    const book1 = new Book()
+    book1.fill({ name: 'Introduction AdonisJs' })
+    await book1.save()
+
+    const book2 = new Book()
+    book2.fill({ name: 'Introduction Javascript' })
+    await book2.save()
+
+    const author1 = new Author()
+    author1.fill({ name: 'John' })
+    await author1.save()
+
+    const author2 = new Author()
+    author2.fill({ name: 'Mary' })
+    await author2.save()
+
+    const author3 = new Author()
+    author3.fill({ name: 'Paul' })
+    await author3.save()
+
+    await book1.related('authors').attach([author1.id, author2.id, author3.id])
+    await book2.related('authors').attach([author2.id, author3.id])
+    await author1.delete()
+
+    const authorsLimit1 = await Book.query()
+      .preload('authors', (authors) => authors.groupLimit(1))
+      .paginate(1, 10)
+
+    assert.lengthOf(authorsLimit1, 2)
+    assert.lengthOf(authorsLimit1[0].authors, 1)
+    assert.lengthOf(authorsLimit1[1].authors, 1)
+
+    const authorsLimit2 = await Book.query()
+      .preload('authors', (authors) => authors.groupLimit(2))
+      .paginate(1, 10)
+
+    assert.lengthOf(authorsLimit2, 2)
+    assert.lengthOf(authorsLimit2[0].authors, 2)
+    assert.lengthOf(authorsLimit2[1].authors, 2)
+
+    await Promise.all([Book.truncate(), Author.truncate()])
   })
 })
