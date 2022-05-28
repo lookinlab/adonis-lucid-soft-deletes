@@ -108,8 +108,6 @@ test.group('Relations', (group) => {
     }
 
     class Book extends MyBaseModel {
-      public static table = 'books'
-
       @column()
       public name: string
 
@@ -118,8 +116,6 @@ test.group('Relations', (group) => {
     }
 
     class Author extends MyBaseModel {
-      public static table = 'authors'
-
       @column()
       public name: string
 
@@ -161,6 +157,7 @@ test.group('Relations', (group) => {
     assert.lengthOf(books, 1)
     assert.lengthOf(books[0].authors, 1)
 
+    await book1.related('authors').detach()
     await Promise.all([Book.truncate(), Author.truncate()])
   })
 
@@ -229,6 +226,13 @@ test.group('Relations', (group) => {
     assert.lengthOf(authorsLimit2, 2)
     assert.lengthOf(authorsLimit2[0].authors, 2)
     assert.lengthOf(authorsLimit2[1].authors, 2)
+
+    const authorsJohns = await Book.query()
+      .preload('authors', (authors) => authors.where('name', 'Mary'))
+      .paginate(1, 10)
+
+    assert.lengthOf(authorsJohns, 2)
+    assert.lengthOf(authorsJohns[0].authors, 1)
 
     await Promise.all([Book.truncate(), Author.truncate()])
   })
