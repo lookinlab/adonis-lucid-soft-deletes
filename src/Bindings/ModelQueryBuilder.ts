@@ -27,7 +27,7 @@ export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBu
   builder.macro('restore', async function () {
     ensureModelWithSoftDeletes(this.model)
 
-    const deletedAtColumn = this.model.query.$getColumn('deletedAt')?.columnName
+    const deletedAtColumn = this.model.$getColumn('deletedAt')?.columnName
     await this.update({ [deletedAtColumn]: null })
   })
 
@@ -39,7 +39,7 @@ export function extendModelQueryBuilder (builder: DatabaseContract['ModelQueryBu
   builder.macro('onlyTrashed', function () {
     ensureModelWithSoftDeletes(this.model)
 
-    const deletedAtColumn = this.model.query.$getColumn('deletedAt')?.columnName
+    const deletedAtColumn = this.model.$getColumn('deletedAt')?.columnName
     return this.model.disableIgnore(this).whereNotNull(`${this.model.table}.${deletedAtColumn}`)
   })
 }
