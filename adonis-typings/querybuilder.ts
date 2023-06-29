@@ -8,15 +8,15 @@
  */
 
 declare module '@ioc:Adonis/Lucid/Orm' {
+  import type { LucidModel } from '@ioc:Adonis/Lucid/Orm'
+
   type ModelWithSoftDeletes = LucidModel & {
-    ignoreDeleted(): void
-    ignoreDeletedPaginate(): void
+    ignoreDeleted(query): void,
+    ignoreDeletedPaginate([countQuery, query]): void
   }
 
-  type ExcludeTypeMethods<Type, Model> = {
-    [Method in keyof Type as (
-      Model extends ModelWithSoftDeletes ? Method : never
-    )]: Type[Method]
+  type ExcludeMethods<Type, Model> = {
+    [Method in keyof Type]: Model extends ModelWithSoftDeletes ? Type[Method] : never
   }
 
   interface SoftDeletesMethods<Model extends LucidModel, Result = InstanceType<Model>> {
@@ -26,5 +26,5 @@ declare module '@ioc:Adonis/Lucid/Orm' {
   }
 
   interface ModelQueryBuilderContract<Model extends LucidModel, Result = InstanceType<Model>>
-    extends ExcludeTypeMethods<SoftDeletesMethods<Model, Result>, Model> {}
+    extends ExcludeMethods<SoftDeletesMethods<Model, Result>, Model> {}
 }
