@@ -16,6 +16,7 @@ import { compose } from '@poppinss/utils/build/src/Helpers'
 import { LucidModel } from '@ioc:Adonis/Lucid/Orm'
 import { SoftDeletes } from '../src/SoftDeletes'
 import { DateTime } from 'luxon'
+import { extendModelQueryBuilder } from '../src/Bindings/ModelQueryBuilder'
 
 test.group('BaseModelWithSoftDeletes', (group) => {
   let app: ApplicationContract
@@ -24,6 +25,8 @@ test.group('BaseModelWithSoftDeletes', (group) => {
   group.before(async () => {
     app = await setupApplication()
     BaseModel = getBaseModel(app)
+    extendModelQueryBuilder(ModelQueryBuilder)
+
     await setup()
   })
   group.after(async () => cleanup())
@@ -44,6 +47,8 @@ test.group('BaseModelWithSoftDeletes', (group) => {
 
     assert.notProperty(TestModel, 'withTrashed')
     assert.notProperty(TestModel, 'onlyTrashed')
+    assert.throw(TestModel.query().withTrashed)
+    assert.throw(TestModel.query().onlyTrashed)
   })
 
   test('exists methods `restore` and `forceDelete` of model instance', (assert) => {
@@ -198,7 +203,7 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     user2.fill({ username: 'Adonis', email: 'test@test.ru', isAdmin: 0, companyId: 2 })
     await user2.save()
 
-    const users = await User.onlyTrashed().exec()
+    const users = await User.query().onlyTrashed().exec()
     assert.lengthOf(users, 1)
     assert.equal(users[0].id, user1.id)
 
