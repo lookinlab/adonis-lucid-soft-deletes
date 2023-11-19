@@ -81,10 +81,6 @@ import { SoftDeletes } from '@ioc:Adonis/Addons/LucidSoftDeletes'
 
 export default class User extends compose(BaseModel, SoftDeletes) {
   // ...columns and props
-
-  // set custom `deletedAt` column name
-  @column.dateTime({ columnName: 'customDeletedAtColumn' })
-  public deletedAt?: DateTime | null
 }
 ```
 
@@ -133,6 +129,20 @@ export default class UsersController {
     }
     return user
   }
+}
+```
+
+### Set custom column name for `deletedAt`
+
+```ts
+import { compose } from '@ioc:Adonis/Core/Helpers'
+import { SoftDeletes } from '@ioc:Adonis/Addons/LucidSoftDeletes'
+
+export default class User extends compose(BaseModel, SoftDeletes) {
+  // ...columns and props
+
+  @column.dateTime({ columnName: 'customDeletedAtColumn' })
+  public deletedAt: DateTime | null
 }
 ```
 
