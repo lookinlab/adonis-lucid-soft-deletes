@@ -34,7 +34,9 @@ export function SoftDeletes<T extends NormalizeConstructor<typeof BaseModel>>(su
       const isGroupLimitQuery = query.clone().toQuery().includes('adonis_group_limit_counter')
       const deletedAtColumn = query.model.$getColumn('deletedAt')?.columnName
 
-      const queryIgnoreDeleted = isGroupLimitQuery ? (query.knexQuery as any)['_single'].table : query
+      const queryIgnoreDeleted = isGroupLimitQuery
+        ? (query.knexQuery as any)['_single'].table
+        : query
 
       queryIgnoreDeleted.whereNull(`${query.model.table}.${deletedAtColumn}`)
     }
