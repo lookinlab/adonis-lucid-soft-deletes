@@ -13,7 +13,9 @@
     "!build/tests"
   ],
   "exports": {
-    ".": "./build/index.js"
+    ".": "./build/index.js",
+    "./types/*": "./build/src/types/*.js",
+    "./bindings": "./build/src/bindings/model_query_builder.js"
   },
   "scripts": {
     "lint": "eslint .",
@@ -111,7 +113,9 @@
   },
   "tsup": {
     "entry": [
-      "./index.ts"
+      "./index.ts",
+      "./src/types/*.ts",
+      "./src/bindings/model_query_builder.ts"
     ],
     "outDir": "./build",
     "clean": true,
