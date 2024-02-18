@@ -1,18 +1,17 @@
 /*
  * adonis-lucid-soft-deletes
  *
- * (c) Lookin Anton <lookin@lookinlab.ru>
+ * (c) Lookin Anton <alsd@lookinlab.ru>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-declare module '@ioc:Adonis/Lucid/Orm' {
-  import type { LucidModel } from '@ioc:Adonis/Lucid/Orm'
-
-  type ModelWithSoftDeletes = LucidModel & {
-    ignoreDeleted(query): void,
-    ignoreDeletedPaginate([countQuery, query]): void
+declare module '@adonisjs/lucid/types/model' {
+  export type ModelWithSoftDeletes = LucidModel & {
+    ignoreDeleted(query: any): void
+    ignoreDeletedPaginate([countQuery, query]: [any, any]): void
+    disableIgnore(query: any): any
   }
 
   type ExcludeMethods<Type, Model> = {
