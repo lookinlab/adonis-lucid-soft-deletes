@@ -14,16 +14,16 @@ declare module '@adonisjs/lucid/types/model' {
     disableIgnore(query: any): any
   }
 
-  type ExcludeMethods<Type, Model> = {
-    [Method in keyof Type]: Model extends ModelWithSoftDeletes ? Type[Method] : never
+  type ExcludeSoftDeletesMethods<Methods, Model> = {
+    [Method in keyof Methods]: Model extends ModelWithSoftDeletes ? Methods[Method] : never
   }
 
-  interface SoftDeletesMethods<Model extends LucidModel, Result = InstanceType<Model>> {
-    withTrashed(): ModelQueryBuilderContract<Model, Result>
-    onlyTrashed(): ModelQueryBuilderContract<Model, Result>
+  type SoftDeletesMethods<Model extends LucidModel> = {
+    withTrashed(): ModelQueryBuilderContract<Model>
+    onlyTrashed(): ModelQueryBuilderContract<Model>
     restore(): Promise<void>
   }
 
-  interface ModelQueryBuilderContract<Model extends LucidModel, Result = InstanceType<Model>>
-    extends ExcludeMethods<SoftDeletesMethods<Model, Result>, Model> {}
+  export interface ModelQueryBuilderContract<Model extends LucidModel, Result = InstanceType<Model>>
+    extends ExcludeSoftDeletesMethods<SoftDeletesMethods<Model>, Model> {}
 }
