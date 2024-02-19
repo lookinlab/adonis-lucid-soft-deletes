@@ -1,5 +1,5 @@
 # Adonis Lucid Soft Deletes
-> Working with AdonisJS v6
+> Works with AdonisJS v6
 
 Docs for [AdonisJS v5](https://github.com/lookinlab/adonis-lucid-soft-deletes/tree/v1)
 
