@@ -1,5 +1,5 @@
 # Adonis Lucid Soft Deletes
-> WIP for Adonis v6
+> Working with AdonisJS v6
 
 [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
 
