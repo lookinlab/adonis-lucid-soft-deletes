@@ -30,7 +30,22 @@ yarn add adonis-lucid-soft-deletes
 pnpm add adonis-lucid-soft-deletes
 ```
 
+After install call `configure`:
+
+```bash
+node ace configure adonis-lucid-soft-deletes
+```
+
 ## Usage
+
+Make sure to register the provider inside `adonisrc.ts` file.
+
+```ts
+providers: [
+  // ...
+  () => import('adonis-lucid-soft-deletes/provider'),
+]
+```
 
 You should add the `deleted_at` column to your database tables for models with soft deletes.
 
