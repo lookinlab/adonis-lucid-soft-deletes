@@ -21,11 +21,11 @@ Install it using `npm` or `yarn`.
 
 ```bash
 # npm
-npm i adonis-lucid-soft-deletes
+npm i adonis-lucid-soft-deletes@legacy
 node ace configure adonis-lucid-soft-deletes
 
 # yarn
-yarn add adonis-lucid-soft-deletes
+yarn add adonis-lucid-soft-deletes@legacy
 node ace configure adonis-lucid-soft-deletes
 ```
 
