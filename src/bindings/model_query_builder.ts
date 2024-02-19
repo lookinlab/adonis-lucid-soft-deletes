@@ -7,8 +7,6 @@
  * file that was distributed with this source code.
  */
 
-/// <reference path="../types/querybuilder.ts" />
-
 import type {
   LucidModel,
   ModelQueryBuilderContract,

@@ -15,7 +15,8 @@
   "exports": {
     ".": "./build/index.js",
     "./types/*": "./build/src/types/*.js",
-    "./bindings": "./build/src/bindings/model_query_builder.js"
+    "./bindings": "./build/src/bindings/model_query_builder.js",
+    "./provider": "./build/providers/lucid_soft_deletes_provider.js"
   },
   "scripts": {
     "lint": "eslint .",
@@ -115,7 +116,8 @@
     "entry": [
       "./index.ts",
       "./src/types/*.ts",
-      "./src/bindings/model_query_builder.ts"
+      "./src/bindings/model_query_builder.ts",
+      "./providers/lucid_soft_deletes_provider.ts"
     ],
     "outDir": "./build",
     "clean": true,

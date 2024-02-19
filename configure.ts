@@ -7,11 +7,12 @@
  * file that was distributed with this source code.
  */
 
-// import type Configure from '@adonisjs/core/commands/configure'
+import type Configure from '@adonisjs/core/commands/configure'
 
-export async function configure() {
-  // const codemods = await command.createCodemods()
-  // await codemods.updateRcFile((rcFile) => {
-  // rcFile.addCommand('adonis-lucid-filter/commands')
-  // })
+export async function configure(command: Configure) {
+  const codemods = await command.createCodemods()
+
+  await codemods.updateRcFile((rcFile) => {
+    rcFile.addProvider('adonis-lucid-soft-deletes/provider')
+  })
 }
