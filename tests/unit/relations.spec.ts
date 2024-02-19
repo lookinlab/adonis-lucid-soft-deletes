@@ -1,72 +1,64 @@
 /*
  * adonis-lucid-soft-deletes
  *
- * (c) Lookin Anton <lookin@lookinlab.ru>
+ * (c) Lookin Anton <alsd@lookinlab.ru>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-import test from 'japa'
-import { setup, cleanup, setupApplication, getBaseModel } from '../test-helpers'
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { column, manyToMany } from '@adonisjs/lucid/build/src/Orm/Decorators'
-import { compose } from '@poppinss/utils/build/src/Helpers'
-import { LucidModel, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
-import { SoftDeletes } from '../src/SoftDeletes'
 import { DateTime } from 'luxon'
+import { test } from '@japa/runner'
+import { column, BaseModel, manyToMany } from '@adonisjs/lucid/orm'
+import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import { compose } from '@adonisjs/core/helpers'
+import { createDatabase, createTables } from '../helpers.js'
+import { SoftDeletes } from '../../src/mixin.js'
 
-test.group('Relations', (group) => {
-  let app: ApplicationContract
-  let BaseModel: LucidModel
+test.group('Relations', () => {
+  test('querying model relation with soft delete', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
 
-  group.before(async () => {
-    app = await setupApplication()
-    BaseModel = getBaseModel(app)
-    await setup()
-  })
-  group.after(async () => cleanup())
-
-  test('querying model relation with soft delete', async (assert) => {
     class User extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
-      public id: number
+      declare id: number
 
       @column()
-      public username: string
+      declare username: string
 
       @column()
-      public email: string
+      declare email: string
 
       @column()
-      public isAdmin: number
+      declare isAdmin: number
 
       @column()
-      public companyId: number
+      declare companyId: number
 
       @manyToMany(() => Industry)
-      public industries: ManyToMany<typeof Industry>
+      declare industries: ManyToMany<typeof Industry>
 
       @manyToMany(() => Industry)
-      public supertest: ManyToMany<typeof Industry>
+      declare supertest: ManyToMany<typeof Industry>
     }
     User.boot()
 
     class Industry extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
-      public id: number
+      declare id: number
 
       @column()
-      public title: string
+      declare title: string
 
       @column()
-      public text: string
+      declare text: string
 
       @column()
-      public revenue: number
+      declare revenue: number
 
       @manyToMany(() => User)
-      public users: ManyToMany<typeof User>
+      declare users: ManyToMany<typeof User>
     }
     Industry.boot()
 
@@ -98,29 +90,32 @@ test.group('Relations', (group) => {
     await Promise.all([User.truncate(), Industry.truncate()])
   })
 
-  test('querying many to many with preload', async (assert) => {
+  test('querying many to many with preload', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
     class MyBaseModel extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
-      public id: number
+      declare id: number
 
       @column.dateTime({ serializeAs: null })
-      public deletedAt: DateTime
+      declare deletedAt: DateTime
     }
 
     class Book extends MyBaseModel {
       @column()
-      public name: string
+      declare name: string
 
       @manyToMany(() => Author)
-      public authors: ManyToMany<typeof Author>
+      declare authors: ManyToMany<typeof Author>
     }
 
     class Author extends MyBaseModel {
       @column()
-      public name: string
+      declare name: string
 
       @manyToMany(() => Book)
-      public books: ManyToMany<typeof Book>
+      declare books: ManyToMany<typeof Book>
     }
 
     const book1 = new Book()
@@ -149,10 +144,7 @@ test.group('Relations', (group) => {
     await author1.delete()
     await author2.delete()
 
-    const books = await Book.query()
-      .select('id', 'name')
-      .preload('authors')
-      .exec()
+    const books = await Book.query().select('id', 'name').preload('authors').exec()
 
     assert.lengthOf(books, 1)
     assert.lengthOf(books[0].authors, 1)
@@ -161,30 +153,33 @@ test.group('Relations', (group) => {
     await Promise.all([Book.truncate(), Author.truncate()])
   })
 
-  test('querying many to many with preload and group limit', async (assert) => {
+  test('querying many to many with preload and group limit', async ({ assert }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
     class Book extends BaseModel {
       @column({ isPrimary: true })
-      public id: number
+      declare id: number
 
       @column()
-      public name: string
+      declare name: string
 
       @manyToMany(() => Author)
-      public authors: ManyToMany<typeof Author>
+      declare authors: ManyToMany<typeof Author>
     }
 
     class Author extends compose(BaseModel, SoftDeletes) {
       @column({ isPrimary: true })
-      public id: number
+      declare id: number
 
       @column()
-      public name: string
+      declare name: string
 
       @column.dateTime()
-      public deletedAt: DateTime
+      declare deletedAt: DateTime
 
       @manyToMany(() => Book)
-      public books: ManyToMany<typeof Book>
+      declare books: ManyToMany<typeof Book>
     }
 
     const book1 = new Book()
