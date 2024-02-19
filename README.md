@@ -3,8 +3,10 @@
 
 [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
 
-This addon adds the functionality to soft deletes Lucid Models
+This addon adds the functionality to soft deletes Lucid Models through the `deleted_at` flag
 > Works with `@adonisjs/lucid@^20.1.*`
+
+Sometimes use the `deleted_at` flag for soft deletes could be not good way. More [about it](https://brandur.org/soft-deletion)
 
 ## Introduction
 
