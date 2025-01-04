@@ -14,9 +14,14 @@ import { compose } from '@adonisjs/core/helpers'
 import { createDatabase, createTables } from '../helpers.js'
 import { SoftDeletes } from '../../src/mixin.js'
 import { extendModelQueryBuilder } from '../../src/bindings/model_query_builder.js'
+import { BaseModelFilter, Filterable } from 'adonis-lucid-filter'
+import { extendModelQueryBuilder as extendFilterableModelQueryBuilder } from 'adonis-lucid-filter/bindings'
 
 test.group('BaseModelWithSoftDeletes', (group) => {
-  group.setup(() => extendModelQueryBuilder(ModelQueryBuilder))
+  group.setup(() => {
+    extendModelQueryBuilder(ModelQueryBuilder)
+    extendFilterableModelQueryBuilder(ModelQueryBuilder)
+  })
 
   test('exists methods `withTrashed` and `onlyTrashed`', async ({ assert }) => {
     class TestModel extends compose(BaseModel, SoftDeletes) {}
@@ -176,6 +181,61 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     await User.truncate()
   })
 
+  test('querying all models with trashed models after the filter method from Filterable mixin', async ({
+    assert,
+  }) => {
+    const db = await createDatabase()
+    await createTables(db)
+
+    class UserFilter extends BaseModelFilter {
+      username(value: string) {
+        this.$query.where('username', value)
+      }
+    }
+
+    class User extends compose(BaseModel, Filterable, SoftDeletes) {
+      static $filter = () => UserFilter
+
+      @column({ isPrimary: true })
+      declare id: number
+
+      @column()
+      declare username: string
+
+      @column()
+      declare email: string
+
+      @column()
+      declare isAdmin: number
+
+      @column()
+      declare companyId: number
+    }
+    User.boot()
+
+    const user1 = new User()
+    user1.fill({ username: 'Tony', email: 'tony@test.ru', isAdmin: 1, companyId: 1 })
+    await user1.save()
+    await user1.delete()
+
+    const user2 = new User()
+    user2.fill({ username: 'Adonis', email: 'test@test.ru', isAdmin: 0, companyId: 2 })
+    await user2.save()
+
+    const user3 = new User()
+    user3.fill({ username: 'Lucid', email: 'lucid@test.ru', isAdmin: 0, companyId: 1 })
+    await user3.save()
+
+    const users = await User.filter({ username: 'Tony' }).withTrashed().exec()
+    assert.lengthOf(users, 1)
+
+    const usersWithPagination = await User.onlyTrashed().paginate(1, 5)
+    assert.lengthOf(usersWithPagination.all(), 1)
+    assert.equal(usersWithPagination.total, 1)
+
+    await User.truncate()
+  })
+
   test('querying only trashed models', async ({ assert }) => {
     const db = await createDatabase()
     await createTables(db)
@@ -241,11 +301,12 @@ test.group('BaseModelWithSoftDeletes', (group) => {
     await user1.save()
     await user1.delete()
 
-    const users = await User.onlyTrashed().exec()
+    const users = await User.query().withTrashed().exec()
     assert.lengthOf(users, 1)
     assert.equal(users[0].id, user1.id)
 
-    await user1.restore()
+    await users[0].restore()
+    await user1.refresh()
 
     const user = await User.query().first()
     assert.deepEqual(user!.toJSON(), user1.toJSON())
